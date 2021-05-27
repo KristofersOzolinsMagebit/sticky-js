@@ -59,9 +59,9 @@ var Sticky = /*#__PURE__*/function () {
       var _this = this;
 
       // wait for page to be fully loaded
-      var pageLoaded = setInterval(function () {
+      this.onPageLoad = setInterval(function () {
         if (document.readyState === 'complete') {
-          clearInterval(pageLoaded);
+          clearInterval(_this.onPageLoad);
           var elements = document.querySelectorAll(_this.selector);
 
           _this.forEach(elements, function (element) {
@@ -121,6 +121,19 @@ var Sticky = /*#__PURE__*/function () {
     value: function wrapElement(element) {
       element.insertAdjacentHTML('beforebegin', element.getAttribute('data-sticky-wrapWith') || this.options.wrapWith);
       element.previousSibling.appendChild(element);
+    }
+    /**
+     * Unwraps element from placeholder element
+     * @function
+     * @param {node} element - Element to be wrapped
+     */
+
+  }, {
+    key: "unwrapElement",
+    value: function unwrapElement(element) {
+      var container = element.parentElement;
+      container.insertAdjacentElement('beforebegin', element);
+      container.remove();
     }
     /**
      * Function that activates element when specified conditions are met and then initalise events
@@ -358,6 +371,7 @@ var Sticky = /*#__PURE__*/function () {
     value: function destroy() {
       var _this6 = this;
 
+      clearInterval(this.onPageLoad);
       window.removeEventListener('load', this.updateScrollTopPosition);
       window.removeEventListener('scroll', this.updateScrollTopPosition);
       this.forEach(this.elements, function (element) {
@@ -365,8 +379,13 @@ var Sticky = /*#__PURE__*/function () {
 
         _this6.destroyScrollEvents(element);
 
+        if (element.sticky.wrap) {
+          _this6.unwrapElement(element);
+        }
+
         delete element.sticky;
       });
+      this.elements = [];
     }
     /**
      * Function that returns container element in which sticky element is stuck (if is not specified, then it's stuck to body)
